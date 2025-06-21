@@ -10,6 +10,44 @@ A simple, local fraud detection system using collaborative AI agents built with 
 - **SQLite Database**: Simple local storage for transactions and analysis
 - **REST API**: Clean FastAPI interface for integration
 
+
+## Architecture Overview:
+
+                        ┌──────────────────────┐
+                        │      Client/API      │
+                        │    (FastAPI + LLM)   │
+                        └─────────┬────────────┘
+                                  │
+                    ┌─────────────▼─────────────┐
+                    │    Fraud Detection Core   │
+                    │       (CrewAI Agents)     │
+                    └──────┬──────┬──────┬──────┘
+                           │      │      │
+                  ┌────────▼──┐ ┌─▼────────┐ ┌─────────▼──┐
+                  │  AI Agent │ │ AI Agent │ │  AI Agent  │
+                  └────┬──────┘ └────┬─────┘ └──────┬────┘
+                       │              │              │
+                       │       ┌──────▼──────┐       │
+                       └──────▶│   ChromaDB  │◀──────┘
+                               └──────┬──────┘
+                                      │
+                               ┌──────▼──────┐
+                               │ Voting Engine│
+                               └──────┬──────┘
+                                      │
+                               ┌──────▼──────┐
+                               │ Block/Allow │
+                               └─────────────┘
+                                      │
+                                 ┌────▼────┐
+                                 │ SQLite  │
+                                 └─────────┘
+                                      │
+                                ┌─────▼──────┐
+                                │   Docker   │
+                                └────────────┘
+
+
 ## Project Structure
 
 ```
