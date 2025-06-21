@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # Ollama service for local LLM
+  ollama:
+    image: ollama/ollama:latest
+    container_name: fraud-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - fraud-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Model setup service (runs once to pull the model)
+  ollama-setup:
+    image: curlimages/curl:latest
+    container_name: fraud-ollama-setup
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - fraud-network
+    command: >
+      sh -c "
+        echo 'Pulling llama2 model...' &&
+        curl -X POST http://ollama:11434/api/pull \
+          -H 'Content-Type: application/json' \
+          -d '{\"name\": \"llama2\"}' &&
+        echo 'Model setup complete!'
+      "
+    restart: "no"
+
+  # Fraud detection application
+  fraud-detector:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: fraud-detector-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../data:/app/data
+      - ../chroma_db:/app/chroma_db
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - DATABASE_URL=sqlite:///./data/fraud_detection.db
+      - CHROMA_DB_PATH=./chroma_db
+    depends_on:
+      ollama-setup:
+        condition: service_completed_successfully
+    networks:
+      - fraud-network
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+    driver: local
+
+networks:
+  fraud-network:
+    driver: bridge 

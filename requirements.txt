@@ -1,0 +1,21 @@
+# Core Framework
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+
+# Agentic AI Framework
+crewai==0.41.1
+
+# Database
+sqlalchemy==2.0.23
+chromadb==0.4.18
+
+# Machine Learning
+pandas==2.1.4
+numpy==1.24.3
+
+# Local LLM
+ollama==0.1.7
+
+# HTTP requests
+requests==2.31.0 
